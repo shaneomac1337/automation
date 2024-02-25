@@ -8,6 +8,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 
 
 # Configure logging for DEBUG messages
@@ -104,9 +105,109 @@ def run_test(browser):
         driver.find_element(By.ID, "password").send_keys("secret_sauce")  # Assuming the password is the same
         driver.find_element(By.ID, "login-button").click()
         debug_logger.info(f"Performed login as {selected_user}")
-        succeeded_tests.append("Login")
+
+        # Check if login was successful
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "inventory_list"))
+            )
+            debug_logger.info("Login successful")
+            succeeded_tests.append("Login")
+        except TimeoutException:
+            debug_logger.error("Login failed")
+            failed_tests.append("Login")  # Add login failure to the failed_tests list
+            messagebox.showerror("Error", "Login failed. Please check credentials or site status.")
+            generate_summary(selected_user, succeeded_tests, failed_tests, unexecuted_tests)
+            return  # Stop execution if login fails
 
         time.sleep(2)  # Wait for inventory page to load
+
+        # Define the inventory page URL
+        inventory_url = "https://www.saucedemo.com/inventory.html"
+
+        # Open Sauce Labs Backpack product page
+        if open_backpack_page_var.get():
+            try:
+                element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "item_4_title_link")))
+                driver.execute_script("arguments[0].click();", element)
+                debug_logger.info("Opened Sauce Labs Backpack product page")
+                succeeded_tests.append("Open Sauce Labs Backpack Page")
+                time.sleep(2)  # Wait for the product page to load
+                driver.get(inventory_url)  # Navigate back to the inventory page
+                time.sleep(2)  # Wait for the inventory page to load
+            except Exception as e:
+                debug_logger.error(f"Failed to open Sauce Labs Backpack product page: {str(e)}")
+                failed_tests.append("Open Sauce Labs Backpack Page")
+
+        # Open Sauce Labs Bike Light product page
+        if open_bike_light_page_var.get():
+            try:
+                element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "item_0_title_link")))
+                driver.execute_script("arguments[0].click();", element)
+                debug_logger.info("Opened Sauce Labs Bike Light product page")
+                succeeded_tests.append("Open Sauce Labs Bike Light Page")
+                time.sleep(2)  # Wait for the product page to load
+                driver.get(inventory_url)  # Navigate back to the inventory page
+                time.sleep(2)  # Wait for the inventory page to load
+            except Exception as e:
+                debug_logger.error(f"Failed to open Sauce Labs Bike Light product page: {str(e)}")
+                failed_tests.append("Open Sauce Labs Bike Light Page")
+
+        # Open Sauce Labs Bolt T-Shirt product page
+        if open_bolt_tshirt_page_var.get():
+            try:
+                element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "item_1_title_link")))
+                driver.execute_script("arguments[0].click();", element)
+                debug_logger.info("Opened Sauce Labs Bolt T-Shirt product page")
+                succeeded_tests.append("Open Sauce Labs Bolt T-Shirt Page")
+                time.sleep(2)
+                driver.get(inventory_url)  # Navigate back to the inventory page
+                time.sleep(2)
+            except Exception as e:
+                debug_logger.error(f"Failed to open Sauce Labs Bolt T-Shirt product page: {str(e)}")
+                failed_tests.append("Open Sauce Labs Bolt T-Shirt Page")
+
+        # Open Sauce Labs Fleece Jacket product page
+        if open_fleece_jacket_page_var.get():
+            try:
+                element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "item_5_title_link")))
+                driver.execute_script("arguments[0].click();", element)
+                debug_logger.info("Opened Sauce Labs Fleece Jacket product page")
+                succeeded_tests.append("Open Sauce Labs Fleece Jacket Page")
+                time.sleep(2)
+                driver.get(inventory_url)  # Navigate back to the inventory page
+                time.sleep(2)
+            except Exception as e:
+                debug_logger.error(f"Failed to open Sauce Labs Fleece Jacket product page: {str(e)}")
+                failed_tests.append("Open Sauce Labs Fleece Jacket Page")
+
+        # Open Sauce Labs Onesie product page
+        if open_onesie_page_var.get():
+            try:
+                element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "item_2_title_link")))
+                driver.execute_script("arguments[0].click();", element)
+                debug_logger.info("Opened Sauce Labs Onesie product page")
+                succeeded_tests.append("Open Sauce Labs Onesie Page")
+                time.sleep(2)
+                driver.get(inventory_url)  # Navigate back to the inventory page
+                time.sleep(2)
+            except Exception as e:
+                debug_logger.error(f"Failed to open Sauce Labs Onesie product page: {str(e)}")
+                failed_tests.append("Open Sauce Labs Onesie Page")
+
+        # Open "Test.allTheThings() T-Shirt (Red)" product page
+        if open_allthethings_tshirt_page_var.get():
+            try:
+                element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "item_3_title_link")))
+                driver.execute_script("arguments[0].click();", element)
+                debug_logger.info("Opened Test.allTheThings() T-Shirt (Red) product page")
+                succeeded_tests.append("Open Test.allTheThings() T-Shirt (Red) Page")
+                time.sleep(2)  # Wait for the product page to load
+                driver.get(inventory_url)  # Navigate back to the inventory page
+                time.sleep(2)  # Wait for the inventory page to load
+            except Exception as e:
+                debug_logger.error(f"Failed to open Test.allTheThings() T-Shirt (Red) product page: {str(e)}")
+                failed_tests.append("Open Test.allTheThings() T-Shirt (Red) Page")
 
         # Check if prices should be logged
         if check_prices_var.get():
@@ -292,28 +393,18 @@ def run_test(browser):
             driver.quit()
             debug_logger.info("WebDriver closed")
 
+    generate_summary(selected_user, succeeded_tests, failed_tests, unexecuted_tests)
+
+def generate_summary(selected_user, succeeded_tests, failed_tests, unexecuted_tests):
     # Generate summary in copypasta format
     summary_lines = [
         "🔥🔥🔥 Test Summary 🔥🔥🔥",
-        f"👤 Selected User: {selected_user}",  # Include the selected user
+        f"👤 Selected User: {selected_user}",
         "",
         "✅ Succeeded Tests:",
         "-------------------"
     ]
     summary_lines.extend([f"✔️ {test}" for test in succeeded_tests] if succeeded_tests else ["None 😢"])
-
-    # Only include prices if "Check Prices" test was executed and succeeded
-    if "Check Prices" in succeeded_tests:
-        summary_lines.extend([
-            "",
-            "💰 Prices:",
-            "----------"
-        ])
-        if item_prices:
-            for name, price in item_prices:
-                summary_lines.append(f"💲 {name}: {price}")
-        else:
-            summary_lines.append("No prices logged 🚫")
 
     summary_lines.extend([
         "",
@@ -329,6 +420,15 @@ def run_test(browser):
     ])
     summary_lines.extend([f"⏭️ {test}" for test in unexecuted_tests] if unexecuted_tests else ["None 🚫"])
 
+    summary_lines.append("")
+
+    summary_lines.extend([
+        "",
+        "💰 Item Prices:",
+        "----------------"
+    ])
+    for item_name, item_price in item_prices:
+        summary_lines.append(f"💲{item_name}: {item_price}")
     summary_lines.append("")
 
     summary = "\n".join(summary_lines)
@@ -366,11 +466,22 @@ ctk.set_default_color_theme("blue")  # Set color theme
 
 app = ctk.CTk()  # Create the main window
 app.title("Martínkův tool na automatické testování")
-app.geometry("800x600")  # Adjusted size to fit more checkboxes and layout
+app.geometry("1000x600")  # Adjusted size to fit more checkboxes and layout
 
 # Top section for browser and user selection
 top_frame = ctk.CTkFrame(app)
-top_frame.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+top_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+
+# Create a new frame for the "Check Prices" checkbox
+prices_check_frame = ctk.CTkFrame(app)
+prices_check_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+
+# Add the "Check Prices" checkbox to this new frame
+check_prices_var = ctk.BooleanVar()
+check_prices_checkbox = ctk.CTkCheckBox(prices_check_frame, text="Check Prices", variable=check_prices_var)
+check_prices_checkbox.pack(anchor="center")
+
+app.grid_columnconfigure(1, weight=1)  # Configure the new column for the "Check Prices" frame
 
 # Left section for cart adding/removing
 cart_frame = ctk.CTkFrame(app)
@@ -386,7 +497,7 @@ prices_section_frame.grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
 
 # Configure the grid to allow the left, right, and prices sections to expand and fill space
 app.grid_columnconfigure(0, weight=1)
-app.grid_columnconfigure(1, weight=1)
+app.grid_columnconfigure(1, weight=1)  # Ensure this line is present to allow the "Check Prices" section to expand properly
 app.grid_columnconfigure(2, weight=1)
 app.grid_rowconfigure(1, weight=1)
 
@@ -405,13 +516,13 @@ browser_label = ctk.CTkLabel(top_frame, text="Select Browser:")
 browser_label.grid(row=0, column=0, pady=(0, 10))
 
 firefox_radio = ctk.CTkRadioButton(top_frame, text="Firefox", variable=browser_var, value="Firefox")
-firefox_radio.grid(row=0, column=1, sticky="w")
+firefox_radio.grid(row=0, column=1, sticky="nsew")
 
 edge_radio = ctk.CTkRadioButton(top_frame, text="Edge", variable=browser_var, value="Edge")
-edge_radio.grid(row=0, column=2, sticky="w")
+edge_radio.grid(row=0, column=2, sticky="nsew")
 
 chrome_radio = ctk.CTkRadioButton(top_frame, text="Chrome", variable=browser_var, value="Chrome")
-chrome_radio.grid(row=0, column=3, sticky="w")
+chrome_radio.grid(row=0, column=3, sticky="nsew")
 
 # User selection in top_frame
 user_label = ctk.CTkLabel(top_frame, text="Select User:")
@@ -430,7 +541,7 @@ user_var = ctk.StringVar()
 user_var.set(user_options[0])  # default value
 
 user_dropdown = ctk.CTkComboBox(top_frame, values=user_options, variable=user_var)
-user_dropdown.grid(row=1, column=1, columnspan=2, pady=(0, 10), sticky="ew")
+user_dropdown.grid(row=1, column=1, columnspan=3, pady=(0, 10), sticky="ew")
 
 # Define the select_all_items function before referencing it
 def select_all_items():
@@ -512,11 +623,45 @@ logout_test_checkbox = ctk.CTkCheckBox(second_section_frame, text="Logout Test",
 logout_test_checkbox.pack(pady=10)
 
 # 3rd Section: Check Prices
-check_prices_var = ctk.BooleanVar()
-prices_section_label = ctk.CTkLabel(prices_section_frame, text="3rd Section: Check Prices")
+prices_section_label = ctk.CTkLabel(prices_section_frame, text="3rd Section: Product Pages")
 prices_section_label.pack(pady=(0, 10))
 
-check_prices_checkbox = ctk.CTkCheckBox(prices_section_frame, text="Check Prices", variable=check_prices_var)
-check_prices_checkbox.pack(anchor="w")
+# Create the "Select All" checkbox for product pages at the top
+select_all_products_var = ctk.BooleanVar()
+def select_all_products():
+    is_selected = select_all_products_var.get()
+    open_backpack_page_var.set(is_selected)
+    open_bike_light_page_var.set(is_selected)
+    open_bolt_tshirt_page_var.set(is_selected)
+    open_fleece_jacket_page_var.set(is_selected)
+    open_onesie_page_var.set(is_selected)
+    open_allthethings_tshirt_page_var.set(is_selected)
+
+select_all_products_checkbox = ctk.CTkCheckBox(prices_section_frame, text="Select All Products", variable=select_all_products_var, command=select_all_products)
+select_all_products_checkbox.pack(anchor="w")
+
+open_backpack_page_var = ctk.BooleanVar()
+open_backpack_page_checkbox = ctk.CTkCheckBox(prices_section_frame, text="Open Backpack Page", variable=open_backpack_page_var)
+open_backpack_page_checkbox.pack(anchor="w")
+
+open_bike_light_page_var = ctk.BooleanVar()
+open_bike_light_page_checkbox = ctk.CTkCheckBox(prices_section_frame, text="Open Bike Light Page", variable=open_bike_light_page_var)
+open_bike_light_page_checkbox.pack(anchor="w")
+
+open_bolt_tshirt_page_var = ctk.BooleanVar()
+open_bolt_tshirt_page_checkbox = ctk.CTkCheckBox(prices_section_frame, text="Open Bolt T-Shirt Page", variable=open_bolt_tshirt_page_var)
+open_bolt_tshirt_page_checkbox.pack(anchor="w")
+
+open_fleece_jacket_page_var = ctk.BooleanVar()
+open_fleece_jacket_page_checkbox = ctk.CTkCheckBox(prices_section_frame, text="Open Fleece Jacket Page", variable=open_fleece_jacket_page_var)
+open_fleece_jacket_page_checkbox.pack(anchor="w")
+
+open_onesie_page_var = ctk.BooleanVar()
+open_onesie_page_checkbox = ctk.CTkCheckBox(prices_section_frame, text="Open Onesie Page", variable=open_onesie_page_var)
+open_onesie_page_checkbox.pack(anchor="w")
+
+open_allthethings_tshirt_page_var = ctk.BooleanVar()
+open_allthethings_tshirt_page_checkbox = ctk.CTkCheckBox(prices_section_frame, text="Open Test.allTheThings() T-Shirt (Red) Page", variable=open_allthethings_tshirt_page_var)
+open_allthethings_tshirt_page_checkbox.pack(anchor="w")
 
 app.mainloop()
