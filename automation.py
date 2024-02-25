@@ -28,6 +28,7 @@ item_prices = []
 
 def log_item_prices(driver):
     global item_prices  # Ensure we're modifying the global list
+    item_prices.clear()  # Clear the list at the beginning of the function
     try:
         # Find all elements that contain item names and prices
         item_elements = driver.find_elements(By.CLASS_NAME, "inventory_item")
@@ -84,6 +85,9 @@ def run_test(browser):
     elif browser == "Edge":
         driver = webdriver.Edge()
         debug_logger.info("Edge WebDriver started")
+    elif browser == "Chrome":  # Add this block for Chrome support
+        driver = webdriver.Chrome()
+        debug_logger.info("Chrome WebDriver started")
     else:
         messagebox.showerror("Error", "Browser not supported")
         debug_logger.error("Attempted to start unsupported browser: %s", browser)
@@ -326,7 +330,6 @@ def run_test(browser):
     summary_lines.extend([f"⏭️ {test}" for test in unexecuted_tests] if unexecuted_tests else ["None 🚫"])
 
     summary_lines.append("")
-    summary_lines.append("Stejně si myslim, že Lapšanský by neměl šéfovat týmu automatického testingu, protože je to kokot. 🍆")
 
     summary = "\n".join(summary_lines)
 
@@ -406,6 +409,9 @@ firefox_radio.grid(row=0, column=1, sticky="w")
 
 edge_radio = ctk.CTkRadioButton(top_frame, text="Edge", variable=browser_var, value="Edge")
 edge_radio.grid(row=0, column=2, sticky="w")
+
+chrome_radio = ctk.CTkRadioButton(top_frame, text="Chrome", variable=browser_var, value="Chrome")
+chrome_radio.grid(row=0, column=3, sticky="w")
 
 # User selection in top_frame
 user_label = ctk.CTkLabel(top_frame, text="Select User:")
